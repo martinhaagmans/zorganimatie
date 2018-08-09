@@ -5,7 +5,7 @@ from flask import render_template, flash, redirect, url_for, request, session
 
 app = Flask(__name__)
 app.config['SESSION_TYPE'] = 'filesystem'
-app.config['UPLOAD_FOLDER'] = 'uploads'
+app.config['UPLOAD_FOLDER'] = 'tmp'
 
 def parse_filmscript(filmscript):
     i = 0
