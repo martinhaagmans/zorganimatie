@@ -4,8 +4,10 @@ from flask import Flask
 from flask import render_template, flash, redirect, url_for, request, session
 
 app = Flask(__name__)
-app.config['SESSION_TYPE'] = 'filesystem'
 app.config['UPLOAD_FOLDER'] = 'tmp'
+
+MYDIR = os.path.dirname(__file__)
+save_location = os.path.join(MYDIR,  app.config['UPLOAD_FOLDER'])
 
 def parse_filmscript(filmscript):
     i = 0
@@ -158,14 +160,12 @@ def upload_filmscript():
     if request.method == 'POST':
         
         upload = request.files['targetfile']
-        input_file = os.path.join(app.root_path, 
-                               app.config['UPLOAD_FOLDER'],
-                               upload.filename)
+        input_file = os.path.join(save_location,
+                                  upload.filename)
 
         upload.save(input_file)
 
-        output_file = os.path.join(app.root_path, 
-                                   app.config['UPLOAD_FOLDER'], 
+        output_file = os.path.join(save_location, 
                                    '{}.json.txt'.format(upload.filename))
 
         out = parse_alles(input_file)
