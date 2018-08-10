@@ -84,7 +84,7 @@ def parse_algemeen(parsed_filmscript, out):
             out['t1'] = k
         elif 'Het is ook belangrijk dat u de dokter en de apotheek vertelt welke andere medicijnen u' in v:
             out['t4'] = k
-        elif 'Doe ik. Moet ik nog ergens op letten met eten en drinken?' in v:
+        elif 'Moet ik nog ergens op letten met eten en drinken?' in v:
             out['t5'] = k        
         elif 'En als ik het een keer vergeet?' in v:
             out['t10'] = k
