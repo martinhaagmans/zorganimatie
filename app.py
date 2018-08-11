@@ -88,7 +88,7 @@ def parse_algemeen(parsed_filmscript, out):
             out['t5'] = k        
         elif 'En als ik het een keer vergeet?' in v:
             out['t10'] = k
-        elif 'Ik hoop dat deze informatie u heeft geholpen. En een hele fijne dag nog!' in v:
+        elif 'Ik hoop dat deze informatie u heeft geholpen.'in v and 'En een hele fijne dag nog!' in v:
             out['aOuit'] = k            
 
     return out
@@ -105,8 +105,21 @@ def parse_alles(filmscript):
         timing_json = parse_oud_specifiek(dscript, timing_json)
 
     timing_json['t12'] = ''
+    errors = list()
+    for _ in range(1, 13):
+            to_check = f't{_}'
+            if not to_check in timing_json:
+                errors.append(to_check)
+                timing_json['errors'][to_check] = '?'
 
-    output = str("""{{
+    if len(errors) == 0:
+        timing_json['niet_gevonden'] = '# Alles ok'
+    else:
+        timing_json['niet_gevonden'] = '# {} niet gevonden.'.format(' '.join(errors))
+    
+    
+    output = str("""{niet_gevonden}
+                {{
                 "Tijden" : {{
                     "achtergrondOverlayAan":"32",
                     "achtergrondOverlayUit":"{aOuit}" 
