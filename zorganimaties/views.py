@@ -69,7 +69,7 @@ def parse_oud_specifiek(parsed_filmscript, out):
             out['t2'] = k
         elif 'Moet ik ergens specifiek op letten als ik dit medicijn gebruik?' in v:
             out['t3'] = k
-        elif 'Mag ik wel zelf rijden als ik dit medicijn gebruik?' in v:
+        elif 'zelf rijden als ik dit medicijn gebruik' in v:
             out['t7'] = k
         elif 'Okay, en hoe moet ik dit medicijn precies gebruiken?' in v:
             out['t8'] = k
