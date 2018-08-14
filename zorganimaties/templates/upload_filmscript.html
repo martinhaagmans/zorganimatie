@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        body {
+            font-family: 'PT Sans', sans serif;
+            margin: 0 auto;
+            padding: 40px;
+            color: #656565;
+            background-color: #389eac;
+            max-with: 1260px;
+        }
+
+        form {
+            float: left;
+            padding-left: 30px;
+            margin-top: 40px;
+
+        }
+
+        form input[type=submit] {
+            border-radius: 10px !important;
+            background: #209cad !important;
+            height: 36px !important;
+            text-transform: none !important;
+            font-size: 14px !important;
+            margin-left: 30px;
+            margin-bottom: 0 !important;
+            float: right;
+            border: none;
+            color: #fff !important;
+            font-weight: 700;
+            text-align: center;
+            width: auto !important;
+            cursor: pointer;
+            padding: 0 30px;
+        }
+
+        img {
+            width: 200px;
+            height: auto;
+            margin-top: 40px;
+            margin-left: 40px;
+            float: left;
+        }
+
+        #output {
+            margin-top: 30px;
+            border-radius: 24px;
+            border: 6px solid #bbdee2;
+            background: #ffffff;
+            margin-left: auto;
+            margin-right: auto;
+            width: 603px;
+            height: 300px;
+        }
+
+        #tempo {
+            height: 116px;
+            border-radius: 24px;
+            border: 6px solid #bbdee2;
+            background: #ffffff;
+            margin: 0 auto;
+            width: 603px;
+        }
+
+        .inputfile {
+            border-radius: 10px !important;
+            width: 147px;
+            height: 36px;
+            opacity: 0;
+            position: absolute;
+            background-color: red;
+            cursor: pointer;
+        }
+
+        .inputfile+label {
+            border-radius: 10px !important;
+            background: #209cad !important;
+            height: 29px !important;
+            text-transform: none !important;
+            font-size: 16px !important;
+            display: inline-block;
+            margin-bottom: 0 !important;
+            border: none;
+            color: #fff !important;
+            font-weight: 700;
+            text-align: center;
+            width: 87px;
+            padding-left: 30px;
+            padding-right: 30px;
+            padding-top: 7px;
+        }
+
+        .inputfile:focus+label,
+        .inputfile+label * {
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="tempo">
+        <img src="static/tempo.png">
+        <form method=post enctype=multipart/form-data name=newtargets>
+            <input type=file name=targetfile class="inputfile" width="200" height="40" />
+            <label for="file">Kies bestand</label>
+            <input type="submit" value="Time nu" />
+        </form>
+    </div>
+    <div id="output">
+     {% with messages = get_flashed_messages(with_categories=true) %} 
+     {% for category, message in messages %} 
+        {% if category== 'error' %}
+            <strong style='color:red;font-size:40px'>Error: {{message}}</strong>
+        {% elif category == 'warning' %}
+            <strong style='color:orange;font-size:40px'>LET OP: {{message}}</strong>
+        {% else %}
+            {{ message }}
+        {% endif %} 
+    {% endfor %} 
+    {% endwith %}
+    </div>
+</body>
+
+</html>
