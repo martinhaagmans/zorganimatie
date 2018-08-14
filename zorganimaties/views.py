@@ -111,7 +111,7 @@ def parse_alles(filmscript):
             to_check = 't{}'.format(_)
             if not to_check in timing_json:
                 errors.append(to_check)
-                timing_json['errors'][to_check] = '?'
+                timing_json[to_check] = '?'
 
     if len(errors) == 0:
         timing_json['niet_gevonden'] = '# Alles ok'
