@@ -108,7 +108,7 @@ def parse_alles(filmscript):
     timing_json['t12'] = ''
     errors = list()
     for _ in range(1, 13):
-            to_check = f't{_}'
+            to_check = 't{_}'.format(_)
             if not to_check in timing_json:
                 errors.append(to_check)
                 timing_json['errors'][to_check] = '?'
