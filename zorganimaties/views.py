@@ -54,9 +54,9 @@ def parse_jong_specifiek(parsed_filmscript, out):
         elif 'Okay, en hoe moet ik het gebruiken?' in v:
             out['t8'] = k
         elif 'Wat moet ik doen als ik teveel heb gebruikt?' in v:
-            out['t9'] = k            
+            out['t9'] = k
         elif 'Heeft dit middel ook bijwerkingen?' in v:
-            out['t11'] = k         
+            out['t11'] = k
         elif zwanger and 'zwanger' in v:
             out['t6'] = k
             zwanger = False
@@ -74,9 +74,9 @@ def parse_oud_specifiek(parsed_filmscript, out):
         elif 'Okay, en hoe moet ik dit medicijn precies gebruiken?' in v:
             out['t8'] = k
         elif 'Wat moet ik doen als ik per ongeluk te veel heb gebruikt?' in v:
-            out['t9'] = k            
+            out['t9'] = k
         elif 'Wat voor bijwerkingen kan ik verwachten?' in v:
-            out['t11'] = k                        
+            out['t11'] = k
     return out
 
 def parse_algemeen(parsed_filmscript, out):
@@ -86,11 +86,11 @@ def parse_algemeen(parsed_filmscript, out):
         elif 'Het is ook belangrijk dat u de dokter en de apotheek vertelt welke andere medicijnen u' in v:
             out['t4'] = k
         elif 'Moet ik nog ergens op letten met eten en drinken?' in v:
-            out['t5'] = k        
+            out['t5'] = k
         elif 'En als ik het een keer vergeet?' in v:
             out['t10'] = k
         elif 'Ik hoop dat deze informatie u heeft geholpen.'in v and 'En een hele fijne dag nog!' in v:
-            out['aOuit'] = k            
+            out['aOuit'] = k
 
     return out
 
@@ -117,15 +117,15 @@ def parse_alles(filmscript):
         timing_json['niet_gevonden'] = '# Alles ok'
     else:
         timing_json['niet_gevonden'] = '# {} niet gevonden.'.format(' '.join(errors))
-    
-    
+
+
     output = str("""{niet_gevonden}
                 {{
                 "Tijden" : {{
                     "achtergrondOverlayAan":"32",
-                    "achtergrondOverlayUit":"{aOuit}" 
-                            }},        
-                "Hoofdstukken" : 
+                    "achtergrondOverlayUit":"{aOuit}"
+                            }},
+                "Hoofdstukken" :
                     [
                     {{"nr":"1",
                             "naam":"waarvoor",
@@ -162,22 +162,21 @@ def parse_alles(filmscript):
                             "tijd":"{t11}"}},
                     {{"nr":"12",
                             "naam":"hoe bewaren",
-                            "tijd":"{t12}"}}        
+                            "tijd":"{t12}"}}
                     ]
                 }}
                 """).format(**timing_json)
 
-    return output                
+    return output
 
 @app.route('/', methods=['GET', 'POST'])
 def upload_filmscript():
     if request.method == 'POST':
-        
-        upload = request.files['targetfile']
-        if not upload:
+
+        if not 'targetfile' in request.form.values():
             flash('Geen file opgegeven', 'error')
             return render_template('upload_filmscript.html')
-
+        upload = request.files['targetfile']
         input_file = os.path.join(save_location,
                                   upload.filename)
 
@@ -197,4 +196,4 @@ def upload_filmscript():
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port, debug=True)    
+    app.run(host='0.0.0.0', port=port, debug=True)
