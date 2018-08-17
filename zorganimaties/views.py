@@ -1,7 +1,7 @@
 import os
 
 from flask import Flask
-from flask import render_template, flash, request
+from flask import render_template, flash, request, redirect
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'tmp'
@@ -172,10 +172,10 @@ def parse_alles(filmscript):
 @app.route('/', methods=['GET', 'POST'])
 def upload_filmscript():
     if request.method == 'POST':
-
-        if not 'targetfile' in request.form.values():
+        if len(request.files) == 0:
             flash('Geen file opgegeven', 'error')
-            return render_template('upload_filmscript.html')
+            return redirect('/')
+
         upload = request.files['targetfile']
         input_file = os.path.join(save_location,
                                   upload.filename)
