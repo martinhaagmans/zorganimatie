@@ -1,4 +1,5 @@
 import os
+import math
 
 from flask import Flask
 from flask import render_template, flash, request, redirect
@@ -8,6 +9,18 @@ app.config['UPLOAD_FOLDER'] = 'tmp'
 app.config['SECRET_KEY'] = 'amygdala'
 MYDIR = os.path.dirname(os.path.abspath(__file__))
 save_location = os.path.join(MYDIR,  app.config['UPLOAD_FOLDER'])
+
+def seconden_naar_minuten_seconden(sec):
+    sec = int(sec) - 1
+    if sec < 60:
+        minuten = 0
+        seconden = sec
+    elif sec >= 60:
+        minuten = math.floor(sec / 60)
+        seconden = sec - 60 * minuten
+    minuten = str(minuten).zfill(2)
+    seconden = str(seconden).zfill(2)
+    return('{}:{}'.format(minuten, seconden))
 
 def parse_filmscript(filmscript):
     i = 0
@@ -105,8 +118,12 @@ def parse_alles(filmscript):
     elif 'oud' in dscript['filename'].lower():
         timing_json = parse_oud_specifiek(dscript, timing_json)
 
+    aOuit_minuten_seconden = seconden_naar_minuten_seconden(timing_json['aOuit'])
+    timing_json['aOuit_minuten_seconden'] = '# {}'.format(aOuit_minuten_seconden)
+
     timing_json['t12'] = ''
     errors = list()
+
     for _ in range(1, 13):
             to_check = 't{}'.format(_)
             if not to_check in timing_json:
@@ -118,54 +135,54 @@ def parse_alles(filmscript):
     else:
         timing_json['niet_gevonden'] = '# {} niet gevonden.'.format(' '.join(errors))
 
-
     output = str("""{niet_gevonden}
-                {{
-                "Tijden" : {{
-                    "achtergrondOverlayAan":"32",
-                    "achtergrondOverlayUit":"{aOuit}"
-                            }},
-                "Hoofdstukken" :
-                    [
-                    {{"nr":"1",
-                            "naam":"waarvoor",
-                            "tijd":"{t1}"}},
-                    {{"nr":"2",
-                            "naam":"wanneer niet",
-                            "tijd":"{t2}"}},
-                    {{"nr":"3",
-                            "naam":"extra voorzichtig",
-                            "tijd":"{t3}"}},
-                    {{"nr":"4",
-                            "naam":"andere medicijnen",
-                            "tijd":"{t4}"}},
-                    {{"nr":"5",
-                            "naam":"eten en drinken",
-                            "tijd":"{t5}"}},
-                    {{"nr":"6",
-                            "naam":"zwanger borstvoeden",
-                            "tijd":"{t6}"}},
-                    {{"nr":"7",
-                            "naam":"autorijden",
-                            "tijd":"{t7}"}},
-                    {{"nr":"8",
-                            "naam":"hoe gebruiken",
-                            "tijd":"{t8}"}},
-                    {{"nr":"9",
-                            "naam":"teveel gebruikt",
-                            "tijd":"{t9}"}},
-                    {{"nr":"10",
-                            "naam":"vergeten of stoppen",
-                            "tijd":"{t10}"}},
-                    {{"nr":"11",
-                            "naam":"bijwerkingen",
-                            "tijd":"{t11}"}},
-                    {{"nr":"12",
-                            "naam":"hoe bewaren",
-                            "tijd":"{t12}"}}
-                    ]
-                }}
-                """).format(**timing_json)
+{aOuit_minuten_seconden}
+{{
+"Tijden" : {{
+    "achtergrondOverlayAan":"32",
+    "achtergrondOverlayUit":"{aOuit}"
+            }},
+"Hoofdstukken" :
+    [
+    {{"nr":"1",
+            "naam":"waarvoor",
+            "tijd":"{t1}"}},
+    {{"nr":"2",
+            "naam":"wanneer niet",
+            "tijd":"{t2}"}},
+    {{"nr":"3",
+            "naam":"extra voorzichtig",
+            "tijd":"{t3}"}},
+    {{"nr":"4",
+            "naam":"andere medicijnen",
+            "tijd":"{t4}"}},
+    {{"nr":"5",
+            "naam":"eten en drinken",
+            "tijd":"{t5}"}},
+    {{"nr":"6",
+            "naam":"zwanger borstvoeden",
+            "tijd":"{t6}"}},
+    {{"nr":"7",
+            "naam":"autorijden",
+            "tijd":"{t7}"}},
+    {{"nr":"8",
+            "naam":"hoe gebruiken",
+            "tijd":"{t8}"}},
+    {{"nr":"9",
+            "naam":"teveel gebruikt",
+            "tijd":"{t9}"}},
+    {{"nr":"10",
+            "naam":"vergeten of stoppen",
+            "tijd":"{t10}"}},
+    {{"nr":"11",
+            "naam":"bijwerkingen",
+            "tijd":"{t11}"}},
+    {{"nr":"12",
+            "naam":"hoe bewaren",
+            "tijd":"{t12}"}}
+    ]
+}}
+""").format(**timing_json)
 
     return output
 
