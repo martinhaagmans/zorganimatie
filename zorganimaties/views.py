@@ -2,9 +2,11 @@
 
 import os
 import math
+import time
 
+import zipfile
 from flask import Flask
-from flask import render_template, flash, request, redirect
+from flask import render_template, flash, request, redirect, send_file
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'tmp'
@@ -213,31 +215,65 @@ def parse_alles(filmscript):
     return output
 
 
+def zip_output(file_to_zip, zipname):
+    with zipfile.ZipFile(zipname, 'w' ) as zip:
+        for _ in file_to_zip:
+            print('DITDUS', _)
+            zip.write(_)
+    return
+
+
+def single_file_request():
+    upload = request.files['targetfile']
+    input_file = os.path.join(save_location,
+                              upload.filename)
+
+    upload.save(input_file)
+
+    output_file = os.path.join('{}.tempo.txt'.format(os.path.basename(upload.filename)))
+
+    out = parse_alles(input_file)
+
+    r = app.response_class(out, mimetype='text/csv')
+    r.headers.set('Content-Disposition', 'attachment', filename=output_file)
+    return r
+
+
+def multiple_file_request():
+    uploaded_files = request.files.getlist('targetfile')
+    parsed_files = list()
+    for uploaded_file in uploaded_files:
+        input_file = os.path.join(save_location, uploaded_file.filename)
+        uploaded_file.save(input_file)
+        output_file = os.path.join(save_location, '{}.tempo.txt'.format(os.path.basename(uploaded_file.filename)))
+        out = parse_alles(input_file)
+        with open(output_file, 'w') as f:
+            for line in out:
+                f.write(line)
+        parsed_files.append(output_file)
+    zipname = os.path.join(save_location, 'TestZp.zip')
+    zip_output(parsed_files, zipname)
+    return zipname
+
+
 @app.route('/', methods=['GET', 'POST'])
 def upload_filmscript():
     """View for zorganimaties app. Return file or rendered html."""
     if request.method == 'POST':
-        if len(request.files) == 0:
+        print(request.files.getlist('targetfile'))
+        if len(request.files.getlist('targetfile')) == 0:
             flash('Geen file opgegeven', 'error')
             return redirect('/')
-
-        upload = request.files['targetfile']
-        input_file = os.path.join(save_location,
-                                  upload.filename)
-
-        upload.save(input_file)
-
-        output_file = os.path.join('{}.tempo.txt'.format(os.path.basename(upload.filename)))
-
-        out = parse_alles(input_file)
-
-        r = app.response_class(out, mimetype='text/csv')
-        r.headers.set('Content-Disposition', 'attachment', filename=output_file)
-        return r
-
+        elif len(request.files.getlist('targetfile')) == 1:
+            return single_file_request()
+        elif len(request.files.getlist('targetfile')) > 1:
+            zip_out = multiple_file_request()
+            date_time = time.strftime('%Y-%m-%d_%H:%M')
+            r = app.response_class(zip_out, mimetype='text/csv')
+            r.headers.set('Content-Disposition', 'attachment', filename='{}.zip'.format(date_time))
+            return r
     return render_template('upload_filmscript.html')
 
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port, debug=True)
+    app.run(debug=True)
