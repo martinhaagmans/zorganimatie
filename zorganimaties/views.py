@@ -6,7 +6,7 @@ import time
 
 import zipfile
 from flask import Flask
-from flask import render_template, flash, request, redirect, send_file
+from flask import render_template, flash, request, redirect, send_from_directory, url_for
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'tmp'
@@ -218,8 +218,7 @@ def parse_alles(filmscript):
 def zip_output(file_to_zip, zipname):
     with zipfile.ZipFile(zipname, 'w' ) as zip:
         for _ in file_to_zip:
-            print('DITDUS', _)
-            zip.write(_)
+            zip.write(_, os.path.basename(_))
     return
 
 
@@ -251,16 +250,19 @@ def multiple_file_request():
             for line in out:
                 f.write(line)
         parsed_files.append(output_file)
-    zipname = os.path.join(save_location, 'TestZp.zip')
+    date_time = time.strftime('%Y-%m-%d_%H:%M')
+    zipname = os.path.join(save_location, '{}.zip'.format(date_time))
     zip_output(parsed_files, zipname)
     return zipname
 
+@app.route('/<path:filename>')
+def send_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 @app.route('/', methods=['GET', 'POST'])
 def upload_filmscript():
     """View for zorganimaties app. Return file or rendered html."""
     if request.method == 'POST':
-        print(request.files.getlist('targetfile'))
         if len(request.files.getlist('targetfile')) == 0:
             flash('Geen file opgegeven', 'error')
             return redirect('/')
@@ -268,10 +270,7 @@ def upload_filmscript():
             return single_file_request()
         elif len(request.files.getlist('targetfile')) > 1:
             zip_out = multiple_file_request()
-            date_time = time.strftime('%Y-%m-%d_%H:%M')
-            r = app.response_class(zip_out, mimetype='text/csv')
-            r.headers.set('Content-Disposition', 'attachment', filename='{}.zip'.format(date_time))
-            return r
+            return redirect(url_for('send_file', filename=os.path.basename(zip_out)))
     return render_template('upload_filmscript.html')
 
 
