@@ -160,6 +160,7 @@ def parse_alles(filmscript):
         timing_json['aOuit_minuten_seconden'] = '# {}'.format(aOuit_minuten_seconden)
     else:
         errors.append('aOuit')
+        timing_json['aOuit_minuten_seconden'] = '?'
 
     if len(errors) == 0:
         timing_json['niet_gevonden'] = '# Alles ok'
