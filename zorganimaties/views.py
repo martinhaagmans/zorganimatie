@@ -26,7 +26,7 @@ def seconden_naar_minuten_seconden(sec):
         seconden = sec - 60 * minuten
     minuten = str(minuten).zfill(2)
     seconden = str(seconden).zfill(2)
-    return('{}:{}'.format(minuten, seconden))
+    return('{}:{}:00'.format(minuten, seconden))
 
 
 def parse_filmscript(filmscript):
@@ -146,9 +146,6 @@ def parse_alles(filmscript):
     elif 'oud' in dscript['filename'].lower():
         timing_json = parse_oud_specifiek(dscript, timing_json)
 
-    aOuit_minuten_seconden = seconden_naar_minuten_seconden(timing_json['aOuit'])
-    timing_json['aOuit_minuten_seconden'] = '# {}'.format(aOuit_minuten_seconden)
-
     timing_json['t12'] = ''
     errors = list()
 
@@ -157,6 +154,12 @@ def parse_alles(filmscript):
             if to_check not in timing_json:
                 errors.append(to_check)
                 timing_json[to_check] = '?'
+
+    if 'aOuit' in timing_json:
+        aOuit_minuten_seconden = seconden_naar_minuten_seconden(timing_json['aOuit'])
+        timing_json['aOuit_minuten_seconden'] = '# {}'.format(aOuit_minuten_seconden)
+    else:
+        errors.append('aOuit')
 
     if len(errors) == 0:
         timing_json['niet_gevonden'] = '# Alles ok'
