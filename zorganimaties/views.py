@@ -237,7 +237,6 @@ def single_file_request(screenout):
     output_file = os.path.join('{}.tempo.txt'.format(os.path.basename(upload.filename)))
 
     out = parse_alles(input_file)
-    print(out)
 
     if screenout:
         return render_template('upload_filmscript.html', json_out=out)
