@@ -128,12 +128,14 @@
         <form method=post enctype=multipart/form-data name=newtargets>
             <input type="file" name="targetfile" id="file" class="inputfile" data-multiple-caption="{count} files selected" multiple />
             <label for="file">Kies file</label>
+			<input type=checkbox name=screenout>
             <!-- <input type=file name=targetfile class="inputfile" width="200" height="40" multiple/> -->
             <!-- <label for="file">Kies file</label> -->
             <input type="submit" value="Time nu" />
         </form>
     </div>
     <div id="output">
+	 {{json_out}}
      {% with messages = get_flashed_messages(with_categories=true) %}
      {% for category, message in messages %}
         {% if category== 'error' %}

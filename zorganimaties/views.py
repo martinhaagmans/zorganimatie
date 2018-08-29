@@ -227,7 +227,7 @@ def zip_output(file_to_zip, zipname):
     return
 
 
-def single_file_request():
+def single_file_request(screenout):
     upload = request.files['targetfile']
     input_file = os.path.join(save_location,
                               upload.filename)
@@ -237,10 +237,15 @@ def single_file_request():
     output_file = os.path.join('{}.tempo.txt'.format(os.path.basename(upload.filename)))
 
     out = parse_alles(input_file)
+    print(out)
 
-    r = app.response_class(out, mimetype='text/csv')
-    r.headers.set('Content-Disposition', 'attachment', filename=output_file)
-    return r
+    if screenout:
+        return render_template('upload_filmscript.html', json_out=out)
+
+    elif not screenout:
+        r = app.response_class(out, mimetype='text/csv')
+        r.headers.set('Content-Disposition', 'attachment', filename=output_file)
+        return r
 
 
 def multiple_file_request():
@@ -263,7 +268,7 @@ def multiple_file_request():
 @app.route('/<path:filename>')
 def send_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
-
+    
 @app.route('/', methods=['GET', 'POST'])
 def upload_filmscript():
     """View for zorganimaties app. Return file or rendered html."""
@@ -272,7 +277,12 @@ def upload_filmscript():
             flash('Geen file opgegeven', 'error')
             return redirect('/')
         elif len(request.files.getlist('targetfile')) == 1:
-            return single_file_request()
+            if 'screenout' in request.form:
+                screenout = True
+                return single_file_request(screenout)
+            else:
+                screenout = False
+                return single_file_request(screenout)
         elif len(request.files.getlist('targetfile')) > 1:
             zip_out = multiple_file_request()
             return redirect(url_for('send_file', filename=os.path.basename(zip_out)))
