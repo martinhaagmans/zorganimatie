@@ -38,7 +38,8 @@ def parse_filmscript(filmscript):
     out['filename'] = os.path.basename(str(filmscript))
     with open(filmscript, 'r', encoding="utf-8") as f:
         for line in f:
-            i += 1
+            if not line in ['\n', '\r\n']:
+                i += 1
 
             if i == 1:
                 continue
@@ -46,6 +47,7 @@ def parse_filmscript(filmscript):
             elif i == 2:
                 time = line.split(' --> ')[0]
                 time = time.split(',')[0]
+                print(time)
                 h, m, s = time.split(':')
                 time = int(h) * (60*60) + int(m) * 60 + int(s)
 
