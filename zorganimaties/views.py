@@ -16,7 +16,7 @@ save_location = os.path.join(MYDIR,  app.config['UPLOAD_FOLDER'])
 
 
 def seconden_naar_minuten_seconden(sec):
-    """Convert seconds to minutes and seconds. Return a string."""
+    """Convert seconds to minutes:seconds and return a string."""
     sec = int(sec) - 1
     if sec < 60:
         minuten = 0
@@ -30,7 +30,7 @@ def seconden_naar_minuten_seconden(sec):
 
 
 def parse_filmscript(filmscript):
-    """Parse input text file. Return a dictionary."""
+    """Parse input text file and return a dictionary."""
     i = 0
     time = str()
     tekst = str()
@@ -63,11 +63,15 @@ def parse_filmscript(filmscript):
 
 
 def parse_jong_specifiek(parsed_filmscript, out):
-    """Find specific (for young people) phrases in dict of parsed file.
+    """Find specific phrases and return dict.
 
-    After finding the phrase add corresponding time to output dict.
-    Return output dict.
+    Iterate dict of parsed file with timestamp-phrase
+    as key-value pairs. Add timestamp for found phrase
+    a value to output dict with the corresponding 
+    timestamp number as key. Return the output dict
+    after iterating the entire dict.
     """
+
     zwanger = False
     if 'vrouw' in parsed_filmscript['filename'].lower():
         zwanger = True
@@ -93,10 +97,13 @@ def parse_jong_specifiek(parsed_filmscript, out):
 
 
 def parse_oud_specifiek(parsed_filmscript, out):
-    """Find specific (for old people) phrases in dict of parsed file.
+    """Find specific phrases and return dict.
 
-    After finding the phrase add corresponding time to output dict.
-    Return output dict.
+    Iterate dict of parsed file with timestamp-phrase
+    as key-value pairs. Add timestamp for found phrase
+    a value to output dict with the corresponding 
+    timestamp number as key. Return the output dict
+    after iterating the entire dict.
     """
     out['t6'] = ''
     for k, v in parsed_filmscript.items():
@@ -116,10 +123,13 @@ def parse_oud_specifiek(parsed_filmscript, out):
 
 
 def parse_algemeen(parsed_filmscript, out):
-    """Find specific phrases in dict of parsed file.
+    """Find specific phrases and return dict.
 
-    After finding the phrase add corresponding time to output dict.
-    Return output dict.
+    Iterate dict of parsed file with timestamp-phrase
+    as key-value pairs. Add timestamp for found phrase
+    a value to output dict with the corresponding 
+    timestamp number as key. Return the output dict
+    after iterating the entire dict.
     """
     for k, v in parsed_filmscript.items():
         if 'Uw medicijn heet' in v:
@@ -137,7 +147,7 @@ def parse_algemeen(parsed_filmscript, out):
 
 
 def parse_alles(filmscript):
-    """Collect all times in a dict and parse them into a string. Return string."""
+    """Collect all timestamp times, parse them into a string and return the string."""
     timing_json = dict()
     dscript = parse_filmscript(filmscript)
 
@@ -223,6 +233,7 @@ def parse_alles(filmscript):
 
 
 def zip_output(file_to_zip, zipname):
+    """Zip a list of files to a single file."""
     with zipfile.ZipFile(zipname, 'w' ) as zip:
         for _ in file_to_zip:
             zip.write(_, os.path.basename(_))
