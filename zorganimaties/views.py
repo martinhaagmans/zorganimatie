@@ -3,6 +3,7 @@
 import os
 import math
 import time
+from decimal import Decimal
 
 import zipfile
 from flask import Flask
@@ -14,6 +15,18 @@ app.config['SECRET_KEY'] = 'amygdala'
 MYDIR = os.path.dirname(os.path.abspath(__file__))
 save_location = os.path.join(MYDIR,  app.config['UPLOAD_FOLDER'])
 
+EVENTS = [  "waarvoor",
+            "wanneer_niet",
+            "extra_voorzichtig",
+            "andere_medicijnen",
+            "eten_drinken",
+            "zwanger_borstvoeden",
+            "autorijden",
+            "hoe_gebruiken",
+            "teveel_gebruikt",
+            "vergeten_stoppen",
+            "bijwerkingen",
+            "hoe_bewaren"]
 
 def seconden_naar_minuten_seconden(sec):
     """Convert seconds to minutes:seconds and return a string."""
@@ -26,7 +39,7 @@ def seconden_naar_minuten_seconden(sec):
         seconden = sec - 60 * minuten
     minuten = str(minuten).zfill(2)
     seconden = str(seconden).zfill(2)
-    return('{}:{}:00'.format(minuten, seconden))
+    return('{}.{}'.format(minuten, seconden))
 
 
 def parse_filmscript(filmscript):
@@ -46,10 +59,11 @@ def parse_filmscript(filmscript):
 
             elif i == 2:
                 time = line.split(' --> ')[0]
-                time = time.split(',')[0]
-                print(time)
+                time, fraction = time.split(',')
                 h, m, s = time.split(':')
                 time = int(h) * (60*60) + int(m) * 60 + int(s)
+                time = '{}.{}'.format(time, str(fraction)[:2])
+                time = Decimal(time)
 
             elif i >= 3 and line not in ['\n', '\r\n']:
                 tekst = tekst + ' ' + line.rstrip()
@@ -76,22 +90,24 @@ def parse_jong_specifiek(parsed_filmscript, out):
     if 'vrouw' in parsed_filmscript['filename'].lower():
         zwanger = True
     else:
-        out['t6'] = ''
+        out['zwanger_borstvoeden'] = ''
     for k, v in parsed_filmscript.items():
         if 'Hoe weet ik of ik dit medicijn mag gebruiken?' in v:
-            out['t2'] = k
+            out['wanneer_niet'] = k
         elif 'Moet ik zelf nog ergens op letten als ik dit medicijn gebruik?' in v:
-            out['t3'] = k
+            out['extra_voorzichtig'] = k
         elif 'Mag ik gewoon auto rijden als ik dit medicijn gebruik?' in v:
-            out['t7'] = k
+            out['autorijden'] = k
         elif 'Okay, en hoe moet ik het gebruiken?' in v:
-            out['t8'] = k
+            out['hoe_gebruiken'] = k
         elif 'Wat moet ik doen als ik teveel heb gebruikt?' in v:
-            out['t9'] = k
+            out['teveel_gebruikt'] = k
         elif 'Heeft dit middel ook bijwerkingen?' in v:
-            out['t11'] = k
+            out['bijwerkingen'] = k
+        elif 'Zal ik doen!' in v:
+            out['bijwerkingen_end'] = k
         elif zwanger and 'zwanger' in v:
-            out['t6'] = k
+            out['zwanger_borstvoeden'] = k
             zwanger = False
     return out
 
@@ -105,20 +121,22 @@ def parse_oud_specifiek(parsed_filmscript, out):
     timestamp number as key. Return the output dict
     after iterating the entire dict.
     """
-    out['t6'] = ''
+    out['zwanger_borstvoeden'] = ''
     for k, v in parsed_filmscript.items():
         if 'Hoe weet ik zeker of ik dit medicijn mag gebruiken?' in v:
-            out['t2'] = k
+            out['wanneer_niet'] = k
         elif 'Moet ik ergens specifiek op letten als ik dit medicijn gebruik?' in v:
-            out['t3'] = k
+            out['extra_voorzichtig'] = k
         elif 'zelf rijden als ik dit medicijn gebruik' in v:
-            out['t7'] = k
+            out['autorijden'] = k
         elif 'Okay, en hoe moet ik dit medicijn precies gebruiken?' in v:
-            out['t8'] = k
+            out['hoe_gebruiken'] = k
         elif 'Wat moet ik doen als ik per ongeluk te veel heb gebruikt?' in v:
-            out['t9'] = k
+            out['teveel_gebruikt'] = k
         elif 'Wat voor bijwerkingen kan ik verwachten?' in v:
-            out['t11'] = k
+            out['bijwerkingen'] = k
+        elif 'Ik laat van me horen als er iets is.' in v:
+            out['bijwerkingen_end'] = k
     return out
 
 
@@ -133,13 +151,13 @@ def parse_algemeen(parsed_filmscript, out):
     """
     for k, v in parsed_filmscript.items():
         if 'Uw medicijn heet' in v:
-            out['t1'] = k
+            out['waarvoor'] = k
         elif 'Het is ook belangrijk dat u de dokter en de apotheek vertelt welke andere medicijnen u' in v:
-            out['t4'] = k
+            out['andere_medicijnen'] = k
         elif 'Moet ik nog ergens op letten met eten en drinken?' in v:
-            out['t5'] = k
+            out['eten_drinken'] = k
         elif 'En als ik het een keer vergeet?' in v:
-            out['t10'] = k
+            out['vergeten_stoppen'] = k
         elif 'Ik hoop dat deze informatie u heeft geholpen.'in v and 'En een hele fijne dag nog!' in v:
             out['aOuit'] = k
 
@@ -158,22 +176,46 @@ def parse_alles(filmscript):
     elif 'oud' in dscript['filename'].lower():
         timing_json = parse_oud_specifiek(dscript, timing_json)
 
-    timing_json['t12'] = ''
     errors = list()
 
-    for _ in range(1, 13):
-            to_check = 't{}'.format(_)
-            if to_check not in timing_json:
-                errors.append(to_check)
-                timing_json[to_check] = '?'
+    for to_check in EVENTS:
+        if to_check not in timing_json:
+            errors.append(to_check)
+            timing_json[to_check] = ''
+            timing_json['{}_disabled'.format(to_check)] = 'true'
+        else:
+            timing_json['{}_disabled'.format(to_check)] = 'false'
 
-    if 'aOuit' in timing_json:
-        aOuit_minuten_seconden = seconden_naar_minuten_seconden(timing_json['aOuit'])
-        timing_json['aOuit_minuten_seconden'] = '# {}'.format(aOuit_minuten_seconden)
-    else:
+    for i in range(0, 11):
+        key_start = EVENTS[i]
+        key_end = EVENTS[i + 1]
+
+        if '{}_end'.format(key_start) in timing_json:
+            continue
+            
+        time_end = timing_json['{}'.format(key_end)]
+
+        try:
+            time_end = Decimal(float(time_end)) - Decimal((1/100))
+        except ValueError as e:
+            timing_json['{}_end'.format(key_start)] = ''
+        else:
+            time_end = round(time_end, 2)
+
+        timing_json['{}_end'.format(key_start)] = time_end
+
+    if not 'aOuit' in timing_json:
         errors.append('aOuit')
-        timing_json['aOuit_minuten_seconden'] = '?'
-        timing_json['aOuit'] = '?'
+        timing_json['aOuit'] = ''
+
+    # try:
+    #     bijwerkingen_end = Decimal(float(timing_json['aOuit'])) - Decimal((1/100))
+    # except ValueError as e:
+    #     timing_json['bijwerkingen_end'] = ''
+    # else:
+    #     bijwerkingen_end = round(bijwerkingen_end, 2)
+
+    # timing_json['bijwerkingen_end'] = bijwerkingen_end
 
     if len(errors) == 0:
         timing_json['niet_gevonden'] = '# Alles ok'
@@ -181,50 +223,85 @@ def parse_alles(filmscript):
         timing_json['niet_gevonden'] = '# {} niet gevonden.'.format(' '.join(errors))
 
     output = str("""{niet_gevonden}
-{aOuit_minuten_seconden}
 {{
 "Tijden" : {{
-    "achtergrondOverlayAan":"32",
-    "achtergrondOverlayUit":"{aOuit}"
+    "start_time":"32.00",
+    "end_time":"{aOuit}"
             }},
-"Hoofdstukken" :
+"chapters" :
     [
-    {{"nr":"1",
-            "naam":"waarvoor",
-            "tijd":"{t1}"}},
-    {{"nr":"2",
-            "naam":"wanneer niet",
-            "tijd":"{t2}"}},
-    {{"nr":"3",
-            "naam":"extra voorzichtig",
-            "tijd":"{t3}"}},
-    {{"nr":"4",
-            "naam":"andere medicijnen",
-            "tijd":"{t4}"}},
-    {{"nr":"5",
-            "naam":"eten en drinken",
-            "tijd":"{t5}"}},
-    {{"nr":"6",
-            "naam":"zwanger borstvoeden",
-            "tijd":"{t6}"}},
-    {{"nr":"7",
-            "naam":"autorijden",
-            "tijd":"{t7}"}},
-    {{"nr":"8",
-            "naam":"hoe gebruiken",
-            "tijd":"{t8}"}},
-    {{"nr":"9",
-            "naam":"teveel gebruikt",
-            "tijd":"{t9}"}},
-    {{"nr":"10",
-            "naam":"vergeten of stoppen",
-            "tijd":"{t10}"}},
-    {{"nr":"11",
-            "naam":"bijwerkingen",
-            "tijd":"{t11}"}},
-    {{"nr":"12",
-            "naam":"hoe bewaren",
-            "tijd":"{t12}"}}
+    {{      "title": "Waarvoor is dit medicijn",
+            "title_short":"Waarvoor",
+            "start_time":"{waarvoor}",
+            "end_time":"{waarvoor_end}",
+            "disabled" : {waarvoor_disabled},
+    }},
+    {{      "title": "Wanneer niet gebruiken",
+            "title_short":"Wanneer niet",
+            "start_time":"{wanneer_niet}",
+            "end_time":"{wanneer_niet_end}",
+            "disabled" : {wanneer_niet_disabled},
+    }},
+    {{      "title": "Waar moet ik op letten",
+            "title_short":"Extra voorzichtig",
+            "start_time":"{extra_voorzichtig}",
+            "end_time":"{extra_voorzichtig_end}",
+            "disabled" : {extra_voorzichtig_disabled},
+    }},
+    {{      "title": "Andere medicijnen",
+            "title_short":"Andere medicijnen",
+            "start_time":"{andere_medicijnen}",
+            "end_time":"{andere_medicijnen_end}",
+            "disabled" : {andere_medicijnen_disabled},
+    }},
+    {{      "title": "Eten en drinken",
+            "title_short":"Eten en drinken",
+            "start_time":"{eten_drinken}",
+            "end_time":"{eten_drinken_end}",
+            "disabled" : {eten_drinken_disabled},
+    }},
+    {{      "title": "Zwangerschap of borstvoeding",
+            "title_short":"Zwanger borstvoeden",
+            "start_time":"{zwanger_borstvoeden}",
+            "end_time":"{zwanger_borstvoeden_end}",
+            "disabled" : {zwanger_borstvoeden_disabled},
+    }},
+    {{      "title": "Autorijden",
+            "title_short":"Autorijden",
+            "start_time":"{autorijden}",
+            "end_time":"{autorijden_end}",
+            "disabled" : {autorijden_disabled},
+    }},
+    {{      "title": "Hoe gebruiken",
+            "title_short":"Hoe gebruiken",
+            "start_time":"{hoe_gebruiken}",
+            "end_time":"{hoe_gebruiken_end}",
+            "disabled" : {hoe_gebruiken_disabled},
+    }},
+    {{      "title": "Teveel gebruikt",
+            "title_short":"Teveel gebruikt",
+            "start_time":"{teveel_gebruikt}",
+            "end_time":"{teveel_gebruikt_end}",
+            "disabled" : {teveel_gebruikt_disabled},
+    }},
+    {{      "title": "Vergeten of stoppen",
+            "title_short":"Vergeten of stoppen",
+            "start_time":"{vergeten_stoppen}",
+            "end_time":"{vergeten_stoppen_end}",
+            "disabled" : {vergeten_stoppen_disabled},
+    }},
+    {{      "title": "Bijwerkingen",
+            "title_short":"Bijwerkingen",
+            "start_time":"{bijwerkingen}",
+            "end_time":"{bijwerkingen_end}",
+            "disabled" : {bijwerkingen_disabled},
+    }},
+    {{      "title": "Hoe bewaren",
+            "title_short":"Hoe bewaren",
+            "start_time":"{hoe_bewaren}",
+            "end_time":"",
+            "disabled": {hoe_bewaren_disabled},
+    }}
     ]
 }}
 """).format(**timing_json)
