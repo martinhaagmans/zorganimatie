@@ -167,13 +167,23 @@ def parse_algemeen(parsed_filmscript, out):
 def parse_alles(filmscript):
     """Collect all timestamp times, parse them into a string and return the string."""
     timing_json = dict()
+
     dscript = parse_filmscript(filmscript)
 
     timing_json = parse_algemeen(dscript, timing_json)
 
-    if 'jong' in dscript['filename'].lower():
+    script_name = dscript['filename'].lower()
+
+    zwanger = True
+
+    if 'jong' in script_name:
         timing_json = parse_jong_specifiek(dscript, timing_json)
-    elif 'oud' in dscript['filename'].lower():
+
+        if not 'vrouw' in script_name:
+            zwanger = False
+
+    elif 'oud' in script_name:
+        zwanger = False
         timing_json = parse_oud_specifiek(dscript, timing_json)
 
     errors = list()
@@ -190,9 +200,12 @@ def parse_alles(filmscript):
         key_start = EVENTS[i]
         key_end = EVENTS[i + 1]
 
+        if not zwanger and key_start == 'eten_drinken':
+            key_end = EVENTS[i + 2]
+
         if '{}_end'.format(key_start) in timing_json:
             continue
-            
+
         time_end = timing_json['{}'.format(key_end)]
 
         try:
@@ -208,14 +221,10 @@ def parse_alles(filmscript):
         errors.append('aOuit')
         timing_json['aOuit'] = ''
 
-    # try:
-    #     bijwerkingen_end = Decimal(float(timing_json['aOuit'])) - Decimal((1/100))
-    # except ValueError as e:
-    #     timing_json['bijwerkingen_end'] = ''
-    # else:
-    #     bijwerkingen_end = round(bijwerkingen_end, 2)
-
-    # timing_json['bijwerkingen_end'] = bijwerkingen_end
+    if not zwanger:
+        timing_json['zwanger_borstvoeden_disabled'] = 'true'
+        timing_json['zwanger_borstvoeden_end'] = ''
+        timing_json['zwanger_borstvoeden'] = ''
 
     if len(errors) == 0:
         timing_json['niet_gevonden'] = '# Alles ok'
