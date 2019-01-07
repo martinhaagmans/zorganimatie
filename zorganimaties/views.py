@@ -233,7 +233,7 @@ def parse_alles(filmscript):
 
     output = str("""{niet_gevonden}
 {{
-"Tijden" : {{
+"chapter" : {{
     "start_time":"32.00",
     "end_time":"{aOuit}"
             }},
