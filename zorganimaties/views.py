@@ -44,8 +44,13 @@ def seconden_naar_minuten_seconden(sec):
 
 def parse_filmscript(filmscript):
     """Parse input text file and return a dictionary."""
+
+    endtime_sentences = ["Zal ik doen!", 
+                         "Ik laat van me horen als er iets is." ]
+
     i = 0
-    time = str()
+    time_start = str()
+    time_end = str()
     tekst = str()
     out = dict()
     out['filename'] = os.path.basename(str(filmscript))
@@ -58,20 +63,32 @@ def parse_filmscript(filmscript):
                 continue
 
             elif i == 2:
-                time = line.split(' --> ')[0]
-                time, fraction = time.split(',')
-                h, m, s = time.split(':')
-                time = int(h) * (60*60) + int(m) * 60 + int(s)
-                time = '{}.{}'.format(time, str(fraction)[:2])
-                time = Decimal(time)
+                time_start, time_end = line.split(' --> ')
+                time_start, fraction_start = time_start.split(',')
+                hs, ms, ss = time_start.split(':')
+                time_start = int(hs) * (60*60) + int(ms) * 60 + int(ss)
+                time_start = '{}.{}'.format(time_start, str(fraction_start)[:2])
+                time_start = Decimal(time_start)
+
+                time_end, fraction_end = time_end.split(',')
+                he, me, se = time_end.split(':')
+                time_end = int(he) * (60*60) + int(me) * 60 + int(se)
+                time_end = '{}.{}'.format(time_end, str(fraction_end)[:2])
+                time_end = Decimal(time_end)
+
 
             elif i >= 3 and line not in ['\n', '\r\n']:
                 tekst = tekst + ' ' + line.rstrip()
 
             elif line in ['\n', '\r\n']:
                 i = 0
-                out[time] = tekst.lstrip()
-                time = str()
+                if tekst.lstrip() in endtime_sentences:
+                    out[time_end] = tekst.lstrip()
+                else:
+                    out[time_start] = tekst.lstrip()
+
+                time_start = str()
+                time_end = str()
                 tekst = str()
     return out
 
