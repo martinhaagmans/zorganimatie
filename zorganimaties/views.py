@@ -46,7 +46,8 @@ def parse_filmscript(filmscript):
     """Parse input text file and return a dictionary."""
 
     endtime_sentences = ["Zal ik doen!", 
-                         "Ik laat van me horen als er iets is." ]
+                         "Ik laat van me horen als er iets is!",
+                         "Ik laat van mij horen als er iets is!"]
 
     i = 0
     time_start = str()
@@ -152,7 +153,7 @@ def parse_oud_specifiek(parsed_filmscript, out):
             out['teveel_gebruikt'] = k
         elif 'Wat voor bijwerkingen kan ik verwachten?' in v:
             out['bijwerkingen'] = k
-        elif 'Ik laat van me horen als er iets is.' in v:
+        elif 'Ik laat van mij horen als er iets is!' in v:
             out['bijwerkingen_end'] = k
     return out
 
