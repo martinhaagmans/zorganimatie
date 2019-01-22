@@ -45,10 +45,6 @@ def seconden_naar_minuten_seconden(sec):
 def parse_filmscript(filmscript):
     """Parse input text file and return a dictionary."""
 
-    endtime_sentences = ["Zal ik doen!", 
-                         "Ik laat van me horen als er iets is!",
-                         "Ik laat van mij horen als er iets is!"]
-
     i = 0
     time_start = str()
     time_end = str()
@@ -83,11 +79,7 @@ def parse_filmscript(filmscript):
 
             elif line in ['\n', '\r\n']:
                 i = 0
-                if tekst.lstrip() in endtime_sentences:
-                    out[time_end] = tekst.lstrip()
-                else:
-                    out[time_start] = tekst.lstrip()
-
+                out[(time_start, time_end)] = tekst.lstrip()
                 time_start = str()
                 time_end = str()
                 tekst = str()
@@ -110,23 +102,29 @@ def parse_jong_specifiek(parsed_filmscript, out):
     else:
         out['zwanger_borstvoeden'] = ''
     for k, v in parsed_filmscript.items():
+        try:
+            start, end = k
+        except ValueError:
+            continue
         if 'Hoe weet ik of ik dit medicijn mag gebruiken?' in v:
-            out['wanneer_niet'] = k
+            out['wanneer_niet'] = start
         elif 'Moet ik zelf nog ergens op letten als ik dit medicijn gebruik?' in v:
-            out['extra_voorzichtig'] = k
+            out['extra_voorzichtig'] = start
         elif 'Mag ik gewoon auto rijden als ik dit medicijn gebruik?' in v:
-            out['autorijden'] = k
+            out['autorijden'] = start
         elif 'Okay, en hoe moet ik het gebruiken?' in v:
-            out['hoe_gebruiken'] = k
+            out['hoe_gebruiken'] = start
         elif 'Wat moet ik doen als ik teveel heb gebruikt?' in v:
-            out['teveel_gebruikt'] = k
+            out['teveel_gebruikt'] = start
         elif 'Heeft dit middel ook bijwerkingen?' in v:
-            out['bijwerkingen'] = k
+            out['bijwerkingen'] = start
         elif 'Zal ik doen!' in v:
-            out['bijwerkingen_end'] = k
+            out['bijwerkingen_end'] = end
         elif zwanger and 'zwanger' in v:
-            out['zwanger_borstvoeden'] = k
+            out['zwanger_borstvoeden'] = start
             zwanger = False
+        elif 'Dank voor alle informatie. Tot ziens!' in v:
+            out['aOeind'] = end            
     return out
 
 
@@ -141,20 +139,26 @@ def parse_oud_specifiek(parsed_filmscript, out):
     """
     out['zwanger_borstvoeden'] = ''
     for k, v in parsed_filmscript.items():
+        try:
+            start, end = k
+        except ValueError:
+            continue
         if 'Hoe weet ik zeker of ik dit medicijn mag gebruiken?' in v:
-            out['wanneer_niet'] = k
+            out['wanneer_niet'] = start
         elif 'Moet ik ergens specifiek op letten als ik dit medicijn gebruik?' in v:
-            out['extra_voorzichtig'] = k
+            out['extra_voorzichtig'] = start
         elif 'zelf rijden als ik dit medicijn gebruik' in v:
-            out['autorijden'] = k
+            out['autorijden'] = start
         elif 'Okay, en hoe moet ik dit medicijn precies gebruiken?' in v:
-            out['hoe_gebruiken'] = k
+            out['hoe_gebruiken'] = start
         elif 'Wat moet ik doen als ik per ongeluk te veel heb gebruikt?' in v:
-            out['teveel_gebruikt'] = k
+            out['teveel_gebruikt'] = start
         elif 'Wat voor bijwerkingen kan ik verwachten?' in v:
-            out['bijwerkingen'] = k
+            out['bijwerkingen'] = start
         elif 'Ik laat van mij horen als er iets is!' in v:
-            out['bijwerkingen_end'] = k
+            out['bijwerkingen_end'] = end
+        elif 'Hartelijk dank voor alle informatie. U ook een fijne dag!' in v:
+             out['aOeind'] = end
     return out
 
 
@@ -168,18 +172,89 @@ def parse_algemeen(parsed_filmscript, out):
     after iterating the entire dict.
     """
     for k, v in parsed_filmscript.items():
+        try:
+            start, end = k
+        except ValueError:
+            continue
         if 'Uw medicijn heet' in v:
-            out['waarvoor'] = k
+            out['waarvoor'] = start
         elif 'Het is ook belangrijk dat u de dokter en de apotheek vertelt welke andere medicijnen u' in v:
-            out['andere_medicijnen'] = k
+            out['andere_medicijnen'] = start
         elif 'Moet ik nog ergens op letten met eten en drinken?' in v:
-            out['eten_drinken'] = k
+            out['eten_drinken'] = start
         elif 'En als ik het een keer vergeet?' in v:
-            out['vergeten_stoppen'] = k
+            out['vergeten_stoppen'] = start
         elif 'Ik hoop dat deze informatie u heeft geholpen.'in v and 'En een hele fijne dag nog!' in v:
-            out['aOuit'] = k
+            out['aOeind'] = start
+        elif 'Kijksluiter bevat alleen de meest belangrijke informatie uit de bijsluiter.' in v:
+            out['aOstart'] = start
 
     return out
+
+
+def check_and_disable_events(dict_to_check):
+    """Check if events are present in dict and return dict.
+
+    Check for all EVENTS if they are present in the dict. 
+    Set EVENT_disabled to true if present. 
+    Set EVENT_disabled to false if not present.
+    Return dict with added keys.
+    """
+    for to_check in EVENTS:
+        if to_check not in dict_to_check:
+            dict_to_check[to_check] = ''
+            dict_to_check['{}_disabled'.format(to_check)] = 'true'
+        else:
+            dict_to_check['{}_disabled'.format(to_check)] = 'false'
+
+    return dict_to_check
+
+
+def get_disabled_events(dict_to_check):
+    """Parse dict and return list with all disabled events."""
+    errors = list()
+    for event in EVENTS:
+        if dict_to_check['{}_disabled'.format(event)] == 'true':
+            errors.append(event)
+        elif dict_to_check['{}_end'.format(event)] == '':
+            if event not in errors:
+                errors.append('{}_geen_eindtijd'.format(event))
+    return errors
+
+
+def add_end_times_to_dict(timing_dict, zwanger):
+    for i in range(0, 11):
+        key_start = EVENTS[i]
+        key_end = EVENTS[i + 1]
+
+        if not zwanger and key_start == 'eten_drinken':
+            key_end = EVENTS[i + 2]
+
+        if '{}_end'.format(key_start) in timing_dict:
+            continue
+
+        time_end = timing_dict['{}'.format(key_end)]
+
+        try:
+            time_end = Decimal(float(time_end)) - Decimal((1/100))
+        except ValueError as e:
+            timing_dict['{}_end'.format(key_start)] = ''
+        else:
+            time_end = round(time_end, 2)
+
+        timing_dict['{}_end'.format(key_start)] = time_end
+    return timing_dict
+
+
+def add_quotes_and_null_to_output_dict(output_dict):
+    for k, v in output_dict.items():
+        if not 'disabled' in k:
+            if v == '':
+                output_dict[k] = 'null'
+            else:
+                output_dict[k] = '"{}"'.format(v)
+
+    return output_dict
 
 
 def parse_alles(filmscript):
@@ -204,128 +279,102 @@ def parse_alles(filmscript):
         zwanger = False
         timing_json = parse_oud_specifiek(dscript, timing_json)
 
-    errors = list()
+    timing_json = check_and_disable_events(timing_json)
+    timing_json = add_end_times_to_dict(timing_json, zwanger)
+    errors = get_disabled_events(timing_json)
 
-    for to_check in EVENTS:
-        if to_check not in timing_json:
-            errors.append(to_check)
-            timing_json[to_check] = ''
-            timing_json['{}_disabled'.format(to_check)] = 'true'
-        else:
-            timing_json['{}_disabled'.format(to_check)] = 'false'
-
-    for i in range(0, 11):
-        key_start = EVENTS[i]
-        key_end = EVENTS[i + 1]
-
-        if not zwanger and key_start == 'eten_drinken':
-            key_end = EVENTS[i + 2]
-
-        if '{}_end'.format(key_start) in timing_json:
-            continue
-
-        time_end = timing_json['{}'.format(key_end)]
-
-        try:
-            time_end = Decimal(float(time_end)) - Decimal((1/100))
-        except ValueError as e:
-            timing_json['{}_end'.format(key_start)] = ''
-        else:
-            time_end = round(time_end, 2)
-
-        timing_json['{}_end'.format(key_start)] = time_end
-
-    if not 'aOuit' in timing_json:
-        errors.append('aOuit')
-        timing_json['aOuit'] = ''
+    if not 'aOeind' in timing_json:
+        errors.append('aOeind')
+        timing_json['aOeind'] = ''
 
     if not zwanger:
         timing_json['zwanger_borstvoeden_disabled'] = 'true'
         timing_json['zwanger_borstvoeden_end'] = ''
         timing_json['zwanger_borstvoeden'] = ''
 
+    timing_json = add_quotes_and_null_to_output_dict(timing_json)
+
     if len(errors) == 0:
         timing_json['niet_gevonden'] = '# Alles ok'
     else:
         timing_json['niet_gevonden'] = '# {} niet gevonden.'.format(' '.join(errors))
-
     output = str("""{niet_gevonden}
 {{
 "chapter" : {{
-    "start_time":"32.00",
-    "end_time":"{aOuit}",
+    "start_time":{aOstart},
+    "end_time":"{aOeind}",
 	"chapters" :
 		[
 		{{      "title": "Waarvoor is dit medicijn",
 				"title_short":"Waarvoor",
-				"start_time":"{waarvoor}",
-				"end_time":"{waarvoor_end}",
+				"start_time":{waarvoor},
+				"end_time":{waarvoor_end},
 				"disabled" : {waarvoor_disabled}
 		}},
 		{{      "title": "Wanneer niet gebruiken",
 				"title_short":"Wanneer niet",
-				"start_time":"{wanneer_niet}",
-				"end_time":"{wanneer_niet_end}",
+				"start_time":{wanneer_niet},
+				"end_time":{wanneer_niet_end},
 				"disabled" : {wanneer_niet_disabled}
 		}},
 		{{      "title": "Waar moet ik op letten",
 				"title_short":"Extra voorzichtig",
-				"start_time":"{extra_voorzichtig}",
-				"end_time":"{extra_voorzichtig_end}",
+				"start_time":{extra_voorzichtig},
+				"end_time":{extra_voorzichtig_end},
 				"disabled" : {extra_voorzichtig_disabled}
 		}},
 		{{      "title": "Andere medicijnen",
 				"title_short":"Andere medicijnen",
-				"start_time":"{andere_medicijnen}",
-				"end_time":"{andere_medicijnen_end}",
+				"start_time":{andere_medicijnen},
+				"end_time":{andere_medicijnen_end},
 				"disabled" : {andere_medicijnen_disabled}
 		}},
 		{{      "title": "Eten en drinken",
 				"title_short":"Eten en drinken",
-				"start_time":"{eten_drinken}",
-				"end_time":"{eten_drinken_end}",
+				"start_time":{eten_drinken},
+				"end_time":{eten_drinken_end},
 				"disabled" : {eten_drinken_disabled}
 		}},
 		{{      "title": "Zwangerschap of borstvoeding",
 				"title_short":"Zwanger borstvoeden",
-				"start_time":"{zwanger_borstvoeden}",
-				"end_time":"{zwanger_borstvoeden_end}",
+				"start_time":{zwanger_borstvoeden},
+				"end_time":{zwanger_borstvoeden_end},
 				"disabled" : {zwanger_borstvoeden_disabled}
 		}},
 		{{      "title": "Autorijden",
 				"title_short":"Autorijden",
-				"start_time":"{autorijden}",
-				"end_time":"{autorijden_end}",
+				"start_time":{autorijden},
+				"end_time":{autorijden_end},
 				"disabled" : {autorijden_disabled}
 		}},
 		{{      "title": "Hoe gebruiken",
 				"title_short":"Hoe gebruiken",
-				"start_time":"{hoe_gebruiken}",
-				"end_time":"{hoe_gebruiken_end}",
+				"start_time":{hoe_gebruiken},
+				"end_time":{hoe_gebruiken_end},
 				"disabled" : {hoe_gebruiken_disabled}
 		}},
 		{{      "title": "Teveel gebruikt",
 				"title_short":"Teveel gebruikt",
-				"start_time":"{teveel_gebruikt}",
-				"end_time":"{teveel_gebruikt_end}",
+				"start_time":{teveel_gebruikt},
+				"end_time":{teveel_gebruikt_end},
 				"disabled" : {teveel_gebruikt_disabled}
 		}},
 		{{      "title": "Vergeten of stoppen",
 				"title_short":"Vergeten of stoppen",
-				"start_time":"{vergeten_stoppen}",
-				"end_time":"{vergeten_stoppen_end}",
+				"start_time":{vergeten_stoppen},
+				"end_time":{vergeten_stoppen_end},
 				"disabled" : {vergeten_stoppen_disabled}
 		}},
 		{{      "title": "Bijwerkingen",
 				"title_short":"Bijwerkingen",
-				"start_time":"{bijwerkingen}",
-				"end_time":"{bijwerkingen_end}",
+				"start_time":{bijwerkingen},
+				"end_time":{bijwerkingen_end},
 				"disabled" : {bijwerkingen_disabled}
 		}},
 		{{      "title": "Hoe bewaren",
 				"title_short":"Hoe bewaren",
-				"start_time":"{hoe_bewaren}",
-				"end_time":"",
+				"start_time":{hoe_bewaren},
+				"end_time":null,
 				"disabled": {hoe_bewaren_disabled}
 		}}
 		]
