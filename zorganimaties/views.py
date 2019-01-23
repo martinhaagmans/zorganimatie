@@ -118,8 +118,6 @@ def parse_jong_specifiek(parsed_filmscript, out):
             out['teveel_gebruikt'] = start
         elif 'Heeft dit middel ook bijwerkingen?' in v:
             out['bijwerkingen'] = start
-        elif 'Zal ik doen!' in v:
-            out['bijwerkingen_end'] = end
         elif zwanger and 'zwanger' in v:
             out['zwanger_borstvoeden'] = start
             zwanger = False
@@ -155,8 +153,6 @@ def parse_oud_specifiek(parsed_filmscript, out):
             out['teveel_gebruikt'] = start
         elif 'Wat voor bijwerkingen kan ik verwachten?' in v:
             out['bijwerkingen'] = start
-        elif 'Ik laat van mij horen als er iets is!' in v:
-            out['bijwerkingen_end'] = end
         elif 'Hartelijk dank voor alle informatie. U ook een fijne dag!' in v:
              out['aOeind'] = end
     return out
@@ -188,6 +184,8 @@ def parse_algemeen(parsed_filmscript, out):
             out['aOeind'] = start
         elif 'Kijksluiter bevat alleen de meest belangrijke informatie uit de bijsluiter.' in v:
             out['aOstart'] = start
+        elif 'Maar u kunt natuurlijk ook met de dokter of met de apotheek contact opnemen.' in v:
+            out['bijwerkingen_end'] = end            
 
     return out
 
@@ -302,7 +300,7 @@ def parse_alles(filmscript):
 {{
 "chapter" : {{
     "start_time":{aOstart},
-    "end_time":"{aOeind}",
+    "end_time":{aOeind},
 	"chapters" :
 		[
 		{{      "title": "Waarvoor is dit medicijn",
