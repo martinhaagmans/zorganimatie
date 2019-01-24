@@ -3,11 +3,18 @@
 import os
 import math
 import time
+import zipfile
+
 from decimal import Decimal
 
-import zipfile
 from flask import Flask
-from flask import render_template, flash, request, redirect, send_from_directory, url_for
+from flask import flash
+from flask import url_for
+from flask import request
+from flask import redirect
+from flask import render_template
+from flask import send_from_directory
+
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'tmp'
@@ -110,7 +117,8 @@ def parse_jong_specifiek(parsed_filmscript, out):
             out['wanneer_niet'] = start
         elif 'Moet ik zelf nog ergens op letten als ik dit medicijn gebruik?' in v:
             out['extra_voorzichtig'] = start
-        elif 'Mag ik gewoon auto rijden als ik dit medicijn gebruik?' in v:
+        elif ('Mag ik gewoon auto rijden als ik dit medicijn gebruik?' in v or 
+              'Mag ik gewoon autorijden als ik dit medicijn gebruik?' in v):
             out['autorijden'] = start
         elif 'Okay, en hoe moet ik het gebruiken?' in v:
             out['hoe_gebruiken'] = start
@@ -122,7 +130,7 @@ def parse_jong_specifiek(parsed_filmscript, out):
             out['zwanger_borstvoeden'] = start
             zwanger = False
         elif 'Dank voor alle informatie. Tot ziens!' in v:
-            out['aOeind'] = end            
+            out['aOeind'] = end + Decimal(0.5)
     return out
 
 
@@ -149,12 +157,13 @@ def parse_oud_specifiek(parsed_filmscript, out):
             out['autorijden'] = start
         elif 'Okay, en hoe moet ik dit medicijn precies gebruiken?' in v:
             out['hoe_gebruiken'] = start
-        elif 'Wat moet ik doen als ik per ongeluk te veel heb gebruikt?' in v:
+        elif ('Wat moet ik doen als ik per ongeluk te veel heb gebruikt?' in v or 
+              'Het is me duidelijk. Wat ik moet doen als ik per ongeluk teveel heb gebruikt?' in v):
             out['teveel_gebruikt'] = start
         elif 'Wat voor bijwerkingen kan ik verwachten?' in v:
             out['bijwerkingen'] = start
         elif 'Hartelijk dank voor alle informatie. U ook een fijne dag!' in v:
-             out['aOeind'] = end
+             out['aOeind'] = end + Decimal(0.5)
     return out
 
 
@@ -180,12 +189,10 @@ def parse_algemeen(parsed_filmscript, out):
             out['eten_drinken'] = start
         elif 'En als ik het een keer vergeet?' in v:
             out['vergeten_stoppen'] = start
-        elif 'Ik hoop dat deze informatie u heeft geholpen.'in v and 'En een hele fijne dag nog!' in v:
-            out['aOeind'] = start
         elif 'Kijksluiter bevat alleen de meest belangrijke informatie uit de bijsluiter.' in v:
             out['aOstart'] = start
         elif 'Maar u kunt natuurlijk ook met de dokter of met de apotheek contact opnemen.' in v:
-            out['bijwerkingen_end'] = end            
+            out['bijwerkingen_end'] = end + Decimal(0.5)
 
     return out
 
