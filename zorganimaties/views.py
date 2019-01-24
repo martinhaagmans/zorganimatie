@@ -51,7 +51,6 @@ def seconden_naar_minuten_seconden(sec):
 
 def parse_filmscript(filmscript):
     """Parse input text file and return a dictionary."""
-
     i = 0
     time_start = str()
     time_end = str()
@@ -60,6 +59,7 @@ def parse_filmscript(filmscript):
     out['filename'] = os.path.basename(str(filmscript))
     with open(filmscript, 'r', encoding="utf-8") as f:
         for line in f:
+
             if not line in ['\n', '\r\n']:
                 i += 1
 
@@ -82,7 +82,7 @@ def parse_filmscript(filmscript):
 
 
             elif i >= 3 and line not in ['\n', '\r\n']:
-                tekst = tekst + ' ' + line.rstrip()
+                tekst = tekst.lstrip() + ' ' + line.rstrip()
 
             elif line in ['\n', '\r\n']:
                 i = 0
@@ -122,7 +122,8 @@ def parse_jong_specifiek(parsed_filmscript, out):
             out['autorijden'] = start
         elif 'Okay, en hoe moet ik het gebruiken?' in v:
             out['hoe_gebruiken'] = start
-        elif 'Wat moet ik doen als ik teveel heb gebruikt?' in v:
+        elif ('Wat moet ik doen als ik teveel heb gebruikt?' in v or
+              'Wat moet ik doen als ik te veel heb gebruikt?' in v):
             out['teveel_gebruikt'] = start
         elif 'Heeft dit middel ook bijwerkingen?' in v:
             out['bijwerkingen'] = start
@@ -157,7 +158,7 @@ def parse_oud_specifiek(parsed_filmscript, out):
             out['autorijden'] = start
         elif 'Okay, en hoe moet ik dit medicijn precies gebruiken?' in v:
             out['hoe_gebruiken'] = start
-        elif ('Wat moet ik doen als ik per ongeluk te veel heb gebruikt?' in v or 
+        elif ('Het is me duidelijk. Wat ik moet doen als ik per ongeluk te veel heb gebruikt?' in v or 
               'Het is me duidelijk. Wat ik moet doen als ik per ongeluk teveel heb gebruikt?' in v):
             out['teveel_gebruikt'] = start
         elif 'Wat voor bijwerkingen kan ik verwachten?' in v:
@@ -193,7 +194,6 @@ def parse_algemeen(parsed_filmscript, out):
             out['aOstart'] = start
         elif 'Maar u kunt natuurlijk ook met de dokter of met de apotheek contact opnemen.' in v:
             out['bijwerkingen_end'] = end + Decimal(0.5)
-
     return out
 
 
