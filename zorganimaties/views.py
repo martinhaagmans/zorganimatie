@@ -158,8 +158,8 @@ def parse_oud_specifiek(parsed_filmscript, out):
             out['autorijden'] = start
         elif 'Okay, en hoe moet ik dit medicijn precies gebruiken?' in v:
             out['hoe_gebruiken'] = start
-        elif ('Het is me duidelijk. Wat ik moet doen als ik per ongeluk te veel heb gebruikt?' in v or 
-              'Het is me duidelijk. Wat ik moet doen als ik per ongeluk teveel heb gebruikt?' in v):
+        elif ('Het is me duidelijk. Wat moet ik doen als ik per ongeluk te veel heb gebruikt?' in v or 
+              'Het is me duidelijk. Wat moet ik doen als ik per ongeluk teveel heb gebruikt?' in v):
             out['teveel_gebruikt'] = start
         elif 'Wat voor bijwerkingen kan ik verwachten?' in v:
             out['bijwerkingen'] = start
