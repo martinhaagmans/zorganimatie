@@ -310,20 +310,20 @@ def parse_alles(filmscript):
     "end_time":{aOeind},
 	"chapters" :
 		[
-		{{      "title": "Waarvoor is dit medicijn",
-				"title_short":"Waarvoor",
+		{{      "title": "Waarvoor is dit medicijn?",
+				"title_short":"Waarvoor is het?",
 				"start_time":{waarvoor},
 				"end_time":{waarvoor_end},
 				"disabled" : {waarvoor_disabled}
 		}},
-		{{      "title": "Wanneer niet gebruiken",
-				"title_short":"Wanneer niet",
+		{{      "title": "Wanneer niet gebruiken?",
+				"title_short":"Wanneer niet gebruiken?",
 				"start_time":{wanneer_niet},
 				"end_time":{wanneer_niet_end},
 				"disabled" : {wanneer_niet_disabled}
 		}},
-		{{      "title": "Waar moet ik op letten",
-				"title_short":"Extra voorzichtig",
+		{{      "title": "Waar moet ik op letten?",
+				"title_short":"Waar op letten?",
 				"start_time":{extra_voorzichtig},
 				"end_time":{extra_voorzichtig_end},
 				"disabled" : {extra_voorzichtig_disabled}
@@ -341,7 +341,7 @@ def parse_alles(filmscript):
 				"disabled" : {eten_drinken_disabled}
 		}},
 		{{      "title": "Zwangerschap of borstvoeding",
-				"title_short":"Zwanger borstvoeden",
+				"title_short":"Zwanger of borstvoeding",
 				"start_time":{zwanger_borstvoeden},
 				"end_time":{zwanger_borstvoeden_end},
 				"disabled" : {zwanger_borstvoeden_disabled}
@@ -352,14 +352,14 @@ def parse_alles(filmscript):
 				"end_time":{autorijden_end},
 				"disabled" : {autorijden_disabled}
 		}},
-		{{      "title": "Hoe gebruiken",
-				"title_short":"Hoe gebruiken",
+		{{      "title": "Hoe gebruiken?",
+				"title_short":"Hoe gebruiken?",
 				"start_time":{hoe_gebruiken},
 				"end_time":{hoe_gebruiken_end},
 				"disabled" : {hoe_gebruiken_disabled}
 		}},
-		{{      "title": "Teveel gebruikt",
-				"title_short":"Teveel gebruikt",
+		{{      "title": "Teveel gebruikt?",
+				"title_short":"Teveel gebruikt?",
 				"start_time":{teveel_gebruikt},
 				"end_time":{teveel_gebruikt_end},
 				"disabled" : {teveel_gebruikt_disabled}
@@ -376,8 +376,8 @@ def parse_alles(filmscript):
 				"end_time":{bijwerkingen_end},
 				"disabled" : {bijwerkingen_disabled}
 		}},
-		{{      "title": "Hoe bewaren",
-				"title_short":"Hoe bewaren",
+		{{      "title": "Hoe bewaren?",
+				"title_short":"Hoe bewaren?",
 				"start_time":{hoe_bewaren},
 				"end_time":null,
 				"disabled": {hoe_bewaren_disabled}
