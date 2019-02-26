@@ -391,10 +391,11 @@ def parse_alles(filmscript):
     timing_json = add_quotes_and_null_to_output_dict(timing_json)
 
     if len(errors) == 0:
-        timing_json['niet_gevonden'] = '# Alles ok {}'.format(timing_json['extra_vragen']) 
+        timing_json['niet_gevonden'] = '# Alles ok'
     else:
         timing_json['niet_gevonden'] = '# {} niet gevonden.'.format(' '.join(errors))
-    output = str("""{niet_gevonden}
+    output = str("""# {extra_vragen}
+{niet_gevonden}
 {{
 "chapter" : {{
     "start_time":{aOstart},
