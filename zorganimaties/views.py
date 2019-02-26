@@ -239,7 +239,7 @@ def parse_algemeen(parsed_filmscript, out):
             out['eten_drinken'] = start
         elif 'Kijksluiter bevat alleen de meest belangrijke informatie uit de bijsluiter.' in v:
             out['aOstart'] = start
-        elif 'Dit was Kijksluiter.' in v:
+        elif 'Dit was Kijksluiter!' in v:
             out['extra_vragen'] = start
         elif 'Maar u kunt natuurlijk ook met de dokter of met de apotheek contact opnemen.' in v:
             out['bijwerkingen_end'] = end + Decimal(0.5)
