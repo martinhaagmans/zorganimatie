@@ -4,3 +4,6 @@
 zorganimaties/tmp/*
 *.pyc
 *.pyc
+*.pyc
+zorganimaties/__pycache__/__init__.cpython-36.pyc
+zorganimaties/__pycache__/views.cpython-36.pyc

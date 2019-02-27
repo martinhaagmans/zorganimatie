@@ -35,18 +35,26 @@ EVENTS = [  "waarvoor",
             "bijwerkingen",
             "hoe_bewaren"]
 
-def seconden_naar_minuten_seconden(sec):
-    """Convert seconds to minutes:seconds and return a string."""
+def seconden_naar_uren_minuten_seconden(sec):
+    """Convert seconds to hours:minutes:seconds:hundreds and return a string."""
     sec = int(sec) - 1
     if sec < 60:
+        uren = 0
         minuten = 0
         seconden = sec
     elif sec >= 60:
+        uren = 0
         minuten = math.floor(sec / 60)
         seconden = sec - 60 * minuten
+    elif sec >= 3600:
+        uren = math.floor(sec / 3600)
+        sec = sec - 3600 * uren
+        minuten = math.floor(sec / 60)
+        seconden = sec - 60 * minuten
+    uren = str(uren).zfill(2)
     minuten = str(minuten).zfill(2)
     seconden = str(seconden).zfill(2)
-    return('{}.{}'.format(minuten, seconden))
+    return '{}:{}:{}:00'.format(uren, minuten, seconden) 
 
 
 def parse_filmscript(filmscript):
@@ -239,8 +247,8 @@ def parse_algemeen(parsed_filmscript, out):
             out['eten_drinken'] = start
         elif 'Kijksluiter bevat alleen de meest belangrijke informatie uit de bijsluiter.' in v:
             out['aOstart'] = start
-        elif 'Dit was Kijksluiter!' in v:
-            out['extra_vragen'] = start
+        elif 'Dit was Kijksluiter!' in v or 'Dit was Kijksluiter.' in v:
+            out['extra_vragen'] = seconden_naar_uren_minuten_seconden(start)
         elif 'Maar u kunt natuurlijk ook met de dokter of met de apotheek contact opnemen.' in v:
             out['bijwerkingen_end'] = end + Decimal(0.5)
     return out
@@ -283,7 +291,7 @@ def parse_algemeen_engels(parsed_filmscript, out):
         elif 'This video explains the most important information in the package leaflet.' in v:
             out['aOstart'] = start
         elif 'This concludes the video about your medicine.' in v:
-            out['extra_vragen'] = start
+            out['extra_vragen'] = seconden_naar_uren_minuten_seconden(start)
         elif 'Of course you can also contact your doctor or pharmacist.' in v:
             out['bijwerkingen_end'] = end + Decimal(0.5)
     return out
