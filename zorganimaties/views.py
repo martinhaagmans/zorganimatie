@@ -37,7 +37,8 @@ EVENTS = [  "waarvoor",
 
 def seconden_naar_uren_minuten_seconden(sec):
     """Convert seconds to hours:minutes:seconds:hundreds and return a string."""
-    sec = int(sec) - 1
+    sec, rest = str(sec).split('.')
+    sec = int(sec)
     if sec < 60:
         uren = 0
         minuten = 0
@@ -54,7 +55,7 @@ def seconden_naar_uren_minuten_seconden(sec):
     uren = str(uren).zfill(2)
     minuten = str(minuten).zfill(2)
     seconden = str(seconden).zfill(2)
-    return '{}:{}:{}:00'.format(uren, minuten, seconden) 
+    return '{}:{}:{}:{}'.format(uren, minuten, seconden, rest)
 
 
 def parse_filmscript(filmscript):
