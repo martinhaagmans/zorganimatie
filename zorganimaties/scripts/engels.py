@@ -38,13 +38,13 @@ def parse_algemeen_engels(parsed_filmscript, out):
             start, end = k
         except ValueError:
             continue
-        if 'Your medication is called' in v:
+        if 'Your medicine is called' in v:
             out['waarvoor'] = start
         elif 'How do I know if this medicine is right for me?' in v:
             out['wanneer_niet'] = start    
         elif 'Is there anything I should watch out for while taking this medicine?' in v:
             out['extra_voorzichtig'] = start
-        elif 'It is also important that you tell your' in v:
+        elif 'also important that you tell your' in v:
             out['andere_medicijnen'] = start
         elif 'Is there any food or drink I need to avoid?' in v:
             out['eten_drinken'] = start
@@ -56,7 +56,7 @@ def parse_algemeen_engels(parsed_filmscript, out):
             out['teveel_gebruikt'] = start    
         elif 'And what if I forget to take it?' in v:
             out['vergeten_stoppen'] = start    
-        elif 'Does this medicine have any side effect?' in v:
+        elif 'Does this medicine have any side effects?' in v:
             out['bijwerkingen'] = start            
         elif 'This video explains the most important information in the package leaflet.' in v:
             out['aOstart'] = start
