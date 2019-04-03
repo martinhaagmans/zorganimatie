@@ -87,7 +87,7 @@ def parse_jong_specifiek_engels(parsed_filmscript, out):
             start, end = k
         except ValueError:
             continue
-        if zwanger and 'pregnant' in v:
+        if zwanger and 'pregnan' in v:
             out['zwanger_borstvoeden'] = start
             zwanger = False
         elif 'Thanks for all the info. Bye!' in v:
