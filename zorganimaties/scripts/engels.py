@@ -44,7 +44,7 @@ def parse_algemeen_engels(parsed_filmscript, out):
             out['wanneer_niet'] = start    
         elif 'Is there anything I should watch out for while taking this medicine?' in v:
             out['extra_voorzichtig'] = start
-        elif 'also important that you tell your' in v:
+        elif 'also important to tell your doctor' in v:
             out['andere_medicijnen'] = start
         elif 'Is there any food or drink I need to avoid?' in v:
             out['eten_drinken'] = start
