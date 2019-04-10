@@ -118,7 +118,6 @@ def parse_oud_specifiek_engels(parsed_filmscript, out):
 def get_output_engels(timing_json):
     output = str("""# {extra_vragen}
 {niet_gevonden}
-{{    
 {{
 "chapter" : {{
     "start_time":{aOstart},
