@@ -42,19 +42,24 @@ def parse_algemeen_engels(parsed_filmscript, out):
             out['waarvoor'] = start
         elif 'How do I know if this medicine is right for me?' in v:
             out['wanneer_niet'] = start    
-        elif 'Is there anything I should watch out for while taking this medicine?' in v:
+        elif ('Is there anything I should watch out for while taking this medicine?' in v or
+			  'Is there anything I should watch out for while using this medicine?' in v):
             out['extra_voorzichtig'] = start
         elif 'also important to tell your doctor' in v:
             out['andere_medicijnen'] = start
         elif 'Is there any food or drink I need to avoid?' in v:
             out['eten_drinken'] = start
-        elif 'Can I drive while taking this medicine?' in v:
+        elif ('Can I drive while taking this medicine?' in v or
+			  'Can I drive while using this medicine?' in v):
             out['autorijden'] = start
-        elif 'Great, and how exactly should I take it?' in v:
+        elif ('Great, and how exactly should I take it?' in v or
+			  'Great, and how exactly should I use it?' in v):
             out['hoe_gebruiken'] = start    
-        elif 'What should I do if I accidentally take too much?' in v:
+        elif ('What should I do if I accidentally take too much?' in v or
+			  'What should I do if I accidentally use too much?' in v):
             out['teveel_gebruikt'] = start    
-        elif 'And what if I forget to take it?' in v:
+        elif ('And what if I forget to take it?' in v or
+			  'And what if I forget to take it?' in v):
             out['vergeten_stoppen'] = start    
         elif 'Does this medicine have any side effects?' in v:
             out['bijwerkingen'] = start            
