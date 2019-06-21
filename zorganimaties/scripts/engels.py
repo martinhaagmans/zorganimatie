@@ -59,7 +59,7 @@ def parse_algemeen_engels(parsed_filmscript, out):
 			  'What should I do if I accidentally use too much?' in v):
             out['teveel_gebruikt'] = start    
         elif ('And what if I forget to take it?' in v or
-			  'And what if I forget to take it?' in v):
+			  'And what if I forget to use it?' in v):
             out['vergeten_stoppen'] = start    
         elif 'Does this medicine have any side effects?' in v:
             out['bijwerkingen'] = start            
