@@ -40,7 +40,7 @@ def parse_algemeen_nl(parsed_filmscript, out):
             continue
         if 'Uw medicijn heet' in v:
             out['waarvoor'] = start
-        elif 'Het is ook belangrijk dat u de dokter en de apotheek vertelt welke andere medicijnen u' in v:
+        elif 'Vertel de dokter en de apotheek ook welke andere medicijnen u gebruikt' in v:
             out['andere_medicijnen'] = start
         elif 'Moet ik nog ergens op letten met eten en drinken?' in v:
             out['eten_drinken'] = start
